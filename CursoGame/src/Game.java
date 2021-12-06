@@ -50,11 +50,29 @@ public class Game extends JPanel{
 	}
 	
 	public void update(){
-		bola.posX = bola.posX + bola.velX; // velocidade do objeto
+		bola.posX = bola.posX + bola.velX; // velocidade do objeto (horizontalmente)
+		bola.posY = bola.posY + bola.velY; // velocidade do objeto (verticalmente)
+		
+		testeColisoes();
 	}
 	
 	public void render(){
 		repaint(); // Redesenha a tela a cada repetição do gameloop()
+	}
+	
+	// OUTROS MÉTODOS ------------------
+	
+	public void testeColisoes() {
+		//Testes de colisão com as extremidades da tela
+		if (bola.posX + bola.raio * 2 >= Principal.largura_tela || bola.posX <= 0) {
+			
+			bola.velX = bola.velX * -1; // altera a direção de movimento da bola
+		
+		}
+		if (bola.posY + bola.raio * 2 >= Principal.altura_tela || bola.posY <= 0) {
+			
+			bola.velY = bola.velY * -1; // altera a direção de movimento da bola
+		}
 	}
 	
 	// MÉTODO SOBESCRITO ---------------
@@ -65,6 +83,6 @@ public class Game extends JPanel{
 		g.setColor(Color.red);
 		
 		// Posição e dimensão do obj "Bola" com parâmetros relativos ao obj
-		g.fillOval(bola.posX, bola.posY, bola.raio * 2, bola.raio * 2);
+		g.drawImage(bola.obterImagem(), bola.posX, bola.posY, null);
 	}
 }

@@ -1,14 +1,50 @@
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 
 // Janela em que o jogo ocorrerá de fato:
 
 public class Game extends JPanel{
 	private Bola bola;
+	private boolean k_cima = false;
+	private boolean k_baixo = false;
+	private boolean k_direita = false;
+	private boolean k_esquerda = false;
+	private BufferedImage imgAtual;
 	
 	
 	public Game() {
+		
+		addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+				switch (e.getKeyCode()) {
+				case KeyEvent.VK_UP: k_cima = false; break;
+				case KeyEvent.VK_DOWN: k_baixo = false; break;
+				case KeyEvent.VK_LEFT: k_esquerda = false; break;
+				case KeyEvent.VK_RIGHT: k_direita = false; break;
+				}
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				switch (e.getKeyCode()) {
+				case KeyEvent.VK_UP: k_cima = true; break;
+				case KeyEvent.VK_DOWN: k_baixo = true; break;
+				case KeyEvent.VK_LEFT: k_esquerda = true; break;
+				case KeyEvent.VK_RIGHT: k_direita = true; break;
+				}
+			}
+		});
+		
 		bola = new Bola();
 		setFocusable(true);
 		setLayout(null);
@@ -45,8 +81,50 @@ public class Game extends JPanel{
 		}
 	}
 	
+	
+	// Movimentação da bola:
 	public void handlerEvents(){
+		bola.velX = 0;
+		bola.velY = 0;
+		imgAtual = bola.parada;
 		
+		// Todas as 8 possibilidades de movimento da bola:
+		if (k_cima == true) {
+			bola.velY = -3;
+			imgAtual = bola.cima;
+			
+			if (k_direita == true) {
+				bola.velX = 3;
+				imgAtual = bola.direita_cima;
+			}
+			
+			if (k_esquerda == true) {
+				bola.velX = -3;
+				imgAtual = bola.esquerda_cima;
+			}
+			
+		}else if (k_baixo == true) {
+			bola.velY = 3;
+			imgAtual = bola.baixo;
+			
+			if (k_direita == true) {
+				bola.velX = 3;
+				imgAtual = bola.direita_baixo;
+			}
+			
+			if (k_esquerda == true) {
+				bola.velX = -3;
+				imgAtual = bola.esquerda_baixo;
+			}
+			
+		}else if (k_esquerda == true) {
+			bola.velX = -3;
+			imgAtual = bola.esquerda;
+		
+		}else if (k_direita == true) {
+			bola.velX = 3;
+			imgAtual = bola.direita;
+		}
 	}
 	
 	public void update(){
@@ -66,12 +144,12 @@ public class Game extends JPanel{
 		//Testes de colisão com as extremidades da tela
 		if (bola.posX + bola.raio * 2 >= Principal.largura_tela || bola.posX <= 0) {
 			
-			bola.velX = bola.velX * -1; // altera a direção de movimento da bola
+			bola.posX = bola.posX - bola.velX; // desfaz o movimento
 		
 		}
 		if (bola.posY + bola.raio * 2 >= Principal.altura_tela || bola.posY <= 0) {
 			
-			bola.velY = bola.velY * -1; // altera a direção de movimento da bola
+			bola.posY = bola.posY - bola.velY; // desfaz o movimento
 		}
 	}
 	
@@ -83,6 +161,6 @@ public class Game extends JPanel{
 		g.setColor(Color.red);
 		
 		// Posição e dimensão do obj "Bola" com parâmetros relativos ao obj
-		g.drawImage(bola.obterImagem(), bola.posX, bola.posY, null);
+		g.drawImage(imgAtual, bola.posX, bola.posY, null);
 	}
 }

@@ -20,6 +20,7 @@ public class Principal {
 		janela.setVisible(true);
 		janela.pack();
 	}
+	
 	public static void main(String[] args) {
 		new Principal();
 	}

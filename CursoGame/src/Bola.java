@@ -16,6 +16,8 @@ public class Bola {
 	public int raio;
 	public int velX;
 	public int velY;
+	public int centroX;
+	public int centroY;
 	
 	public Bola() {
 		
@@ -39,5 +41,7 @@ public class Bola {
 		raio = 50;
 		velX = 0;
 		velY = 0;
+		centroX = posX + raio;
+		centroY = posY + raio;
 	}
 }

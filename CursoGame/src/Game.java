@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 
 public class Game extends JPanel{
 	private Bola bola;
+	private Inimigo inimigo;
 	private boolean k_cima = false;
 	private boolean k_baixo = false;
 	private boolean k_direita = false;
@@ -46,6 +47,7 @@ public class Game extends JPanel{
 		});
 		
 		bola = new Bola();
+		inimigo = new Inimigo();
 		setFocusable(true);
 		setLayout(null);
 		
@@ -65,6 +67,7 @@ public class Game extends JPanel{
 	}
 	
 	// GAMELOOP ------------------------
+	
 	// Animação do objeto
 	public void gameloop(){
 		
@@ -80,7 +83,6 @@ public class Game extends JPanel{
 			}
 		}
 	}
-	
 	
 	// Movimentação da bola:
 	public void handlerEvents(){
@@ -130,6 +132,9 @@ public class Game extends JPanel{
 	public void update(){
 		bola.posX = bola.posX + bola.velX; // velocidade do objeto (horizontalmente)
 		bola.posY = bola.posY + bola.velY; // velocidade do objeto (verticalmente)
+		// calcular o centro da bola
+		bola.centroX = bola.posX + bola.raio;
+		bola.centroY = bola.posY + bola.raio;
 		
 		testeColisoes();
 	}
@@ -141,7 +146,8 @@ public class Game extends JPanel{
 	// OUTROS MÉTODOS ------------------
 	
 	public void testeColisoes() {
-		//Testes de colisão com as extremidades da tela
+		
+		// Colisão comum --------------
 		if (bola.posX + bola.raio * 2 >= Principal.largura_tela || bola.posX <= 0) {
 			
 			bola.posX = bola.posX - bola.velX; // desfaz o movimento
@@ -149,6 +155,17 @@ public class Game extends JPanel{
 		}
 		if (bola.posY + bola.raio * 2 >= Principal.altura_tela || bola.posY <= 0) {
 			
+			bola.posY = bola.posY - bola.velY; // desfaz o movimento
+		}
+		
+		// Colisão circular ------------
+		int catetoH = bola.centroX - inimigo.centroX;
+		int catetoV = bola.centroY - inimigo.centroY;
+		double hipotenusa = Math.sqrt(Math.pow(catetoH, 2) + Math.pow(catetoV, 2));
+		
+		if (hipotenusa <= bola.raio + inimigo.raio) { // Verifica se houve colisão circular
+			
+			bola.posX = bola.posX - bola.velX; // desfaz o movimento
 			bola.posY = bola.posY - bola.velY; // desfaz o movimento
 		}
 	}
@@ -162,5 +179,7 @@ public class Game extends JPanel{
 		
 		// Posição e dimensão do obj "Bola" com parâmetros relativos ao obj
 		g.drawImage(imgAtual, bola.posX, bola.posY, null);
+		// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
+		g.drawImage(inimigo.img, inimigo.posX, inimigo.posY, null);
 	}
 }

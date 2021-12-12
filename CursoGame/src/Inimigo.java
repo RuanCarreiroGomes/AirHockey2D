@@ -2,6 +2,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
 public class Inimigo {
+	public BufferedImage sprite;
 	public BufferedImage img;
 	public int posX;
 	public int posY;
@@ -11,7 +12,8 @@ public class Inimigo {
 	
 	public Inimigo() {
 		try{
-			img = ImageIO.read(getClass().getResource("imgs/inimigo.gif"));
+			sprite = ImageIO.read(getClass().getResource("imgs/sprite.png"));
+			img = Recursos.getInstance().cortarImagem(400, 100, 500, 200, sprite);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

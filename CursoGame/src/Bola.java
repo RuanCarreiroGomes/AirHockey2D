@@ -2,6 +2,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
 public class Bola {
+	public BufferedImage sprite;
 	public BufferedImage parada;
 	public BufferedImage cima;
 	public BufferedImage baixo;
@@ -21,17 +22,19 @@ public class Bola {
 	
 	public Bola() {
 		
-		// Carregar a imagem "parada.gif" do arquivo imgs
+		// Carregar a imagem da bola dentro do arquivo imgs/sprite.png
 		try {
-			parada = ImageIO.read(getClass().getResource("imgs/parada.gif"));
-			cima = ImageIO.read(getClass().getResource("imgs/cima.gif"));
-			baixo = ImageIO.read(getClass().getResource("imgs/baixo.gif"));
-			esquerda = ImageIO.read(getClass().getResource("imgs/esquerda.gif"));
-			direita = ImageIO.read(getClass().getResource("imgs/direita.gif"));
-			direita_baixo = ImageIO.read(getClass().getResource("imgs/direita_baixo.gif"));
-			esquerda_baixo = ImageIO.read(getClass().getResource("imgs/esquerda_baixo.gif"));
-			direita_cima = ImageIO.read(getClass().getResource("imgs/direita_cima.gif"));
-			esquerda_cima = ImageIO.read(getClass().getResource("imgs/esquerda_cima.gif"));
+			sprite = ImageIO.read(getClass().getResource("imgs/sprite.png"));
+			
+			cima = Recursos.getInstance().cortarImagem(100, 0, 200, 100, sprite);
+			baixo = Recursos.getInstance().cortarImagem(0, 100, 100, 200, sprite);
+			esquerda = Recursos.getInstance().cortarImagem(200, 100, 300, 200, sprite);
+			direita = Recursos.getInstance().cortarImagem(300, 0, 400, 100, sprite);
+			parada = Recursos.getInstance().cortarImagem(300, 100, 400, 200, sprite);
+			esquerda_baixo = Recursos.getInstance().cortarImagem(100, 100, 200, 200, sprite);
+			esquerda_cima = Recursos.getInstance().cortarImagem(0, 0, 100, 100, sprite);
+			direita_baixo = Recursos.getInstance().cortarImagem(400, 0, 500, 100, sprite);
+			direita_cima = Recursos.getInstance().cortarImagem(200, 0, 300, 100, sprite);
 		}catch(Exception e) {
 			System.out.println("Erro ao carregar a imagem");
 		}

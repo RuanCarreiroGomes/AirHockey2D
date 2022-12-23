@@ -1,6 +1,9 @@
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -15,6 +18,10 @@ public class Game extends JPanel{
 	private boolean k_direita = false;
 	private boolean k_esquerda = false;
 	private BufferedImage imgAtual;
+	private long tempoAtual;
+	private long tempoAnterior;
+	private double deltaTime;
+	private double FPS_limit = 60;
 	
 	
 	public Game() {
@@ -70,16 +77,22 @@ public class Game extends JPanel{
 	
 	// Animação do objeto
 	public void gameloop(){
-		
-		while (true) {
-			
-			handlerEvents();
-			update();
-			render();
-			try {
-				Thread.sleep(17);
-			} catch (InterruptedException e) {
+		tempoAnterior = System.nanoTime();
+		double tempoMinimo = (1e9) / FPS_limit; // duração mínima do quadro (em nanosegundos) 
 				
+		while (true) {
+			tempoAtual = System.nanoTime();
+			deltaTime = (tempoAtual - tempoAnterior) * (6e-8);
+			handlerEvents();
+			update(deltaTime);
+			render();
+			tempoAnterior = tempoAtual;
+			
+			try {
+				int tempoEspera = (int) ((tempoMinimo - deltaTime) * (1e-6));
+				Thread.sleep(tempoEspera);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -129,14 +142,14 @@ public class Game extends JPanel{
 		}
 	}
 	
-	public void update(){
-		bola.posX = bola.posX + bola.velX; // velocidade do objeto (horizontalmente)
-		bola.posY = bola.posY + bola.velY; // velocidade do objeto (verticalmente)
+	public void update(double deltaTime){
+		bola.posX = bola.posX + bola.velX * deltaTime; // velocidade do objeto (horizontalmente)
+		bola.posY = bola.posY + bola.velY * deltaTime; // velocidade do objeto (verticalmente)
 		// calcular o centro da bola
 		bola.centroX = bola.posX + bola.raio;
 		bola.centroY = bola.posY + bola.raio;
 		
-		testeColisoes();
+		testeColisoes(deltaTime);
 	}
 	
 	public void render(){
@@ -145,41 +158,49 @@ public class Game extends JPanel{
 	
 	// OUTROS MÉTODOS ------------------
 	
-	public void testeColisoes() {
+	public void testeColisoes(double deltaTime) {
 		
 		// Colisão comum --------------
 		if (bola.posX + bola.raio * 2 >= Principal.largura_tela || bola.posX <= 0) {
 			
-			bola.posX = bola.posX - bola.velX; // desfaz o movimento
+			bola.posX = bola.posX - bola.velX * deltaTime; // desfaz o movimento
 		
 		}
 		if (bola.posY + bola.raio * 2 >= Principal.altura_tela || bola.posY <= 0) {
 			
-			bola.posY = bola.posY - bola.velY; // desfaz o movimento
+			bola.posY = bola.posY - bola.velY * deltaTime; // desfaz o movimento
 		}
 		
 		// Colisão circular ------------
-		int catetoH = bola.centroX - inimigo.centroX;
-		int catetoV = bola.centroY - inimigo.centroY;
+		double catetoH = bola.centroX - inimigo.centroX;
+		double catetoV = bola.centroY - inimigo.centroY;
 		double hipotenusa = Math.sqrt(Math.pow(catetoH, 2) + Math.pow(catetoV, 2));
 		
 		if (hipotenusa <= bola.raio + inimigo.raio) { // Verifica se houve colisão circular
 			
-			bola.posX = bola.posX - bola.velX; // desfaz o movimento
-			bola.posY = bola.posY - bola.velY; // desfaz o movimento
+			bola.posX = bola.posX - bola.velX * deltaTime; // desfaz o movimento
+			bola.posY = bola.posY - bola.velY * deltaTime; // desfaz o movimento
 		}
 	}
 	
 	// MÉTODO SOBESCRITO ---------------
 	@Override
 	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		super.paintComponent(g2d);
+		AffineTransform af1 = new AffineTransform();
+		AffineTransform af2 = new AffineTransform();
+		af1.translate(bola.posX, bola.posY);
+		af2.translate(inimigo.posX, inimigo.posY);
+		
 		setBackground(Color.LIGHT_GRAY);
-		g.setColor(Color.red);
+		g2d.setColor(Color.RED);
 		
 		// Posição e dimensão do obj "Bola" com parâmetros relativos ao obj
-		g.drawImage(imgAtual, bola.posX, bola.posY, null);
+		g2d.drawImage(imgAtual, af1, null);
 		// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
-		g.drawImage(inimigo.img, inimigo.posX, inimigo.posY, null);
+		g2d.drawImage(inimigo.img, af2, null);
 	}
 }

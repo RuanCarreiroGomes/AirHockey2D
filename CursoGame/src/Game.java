@@ -3,21 +3,21 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 // Janela em que o jogo ocorrerá de fato:
 
 public class Game extends JPanel{
-	private Bola bola;
+	private Jogador jogador;
 	private Inimigo inimigo;
 	private boolean k_cima = false;
 	private boolean k_baixo = false;
 	private boolean k_direita = false;
 	private boolean k_esquerda = false;
-	private BufferedImage imgAtual;
+	private BufferedImage bg;
 	private long tempoAtual;
 	private long tempoAnterior;
 	private double deltaTime;
@@ -53,8 +53,15 @@ public class Game extends JPanel{
 			}
 		});
 		
-		bola = new Bola();
+		jogador = new Jogador();
 		inimigo = new Inimigo();
+		
+		try {
+			bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 		setFocusable(true);
 		setLayout(null);
 		
@@ -99,56 +106,12 @@ public class Game extends JPanel{
 	
 	// Movimentação da bola:
 	public void handlerEvents(){
-		bola.velX = 0;
-		bola.velY = 0;
-		imgAtual = bola.parada;
-		
-		// Todas as 8 possibilidades de movimento da bola:
-		if (k_cima == true) {
-			bola.velY = -3;
-			imgAtual = bola.cima;
-			
-			if (k_direita == true) {
-				bola.velX = 3;
-				imgAtual = bola.direita_cima;
-			}
-			
-			if (k_esquerda == true) {
-				bola.velX = -3;
-				imgAtual = bola.esquerda_cima;
-			}
-			
-		}else if (k_baixo == true) {
-			bola.velY = 3;
-			imgAtual = bola.baixo;
-			
-			if (k_direita == true) {
-				bola.velX = 3;
-				imgAtual = bola.direita_baixo;
-			}
-			
-			if (k_esquerda == true) {
-				bola.velX = -3;
-				imgAtual = bola.esquerda_baixo;
-			}
-			
-		}else if (k_esquerda == true) {
-			bola.velX = -3;
-			imgAtual = bola.esquerda;
-		
-		}else if (k_direita == true) {
-			bola.velX = 3;
-			imgAtual = bola.direita;
-		}
+		jogador.handlerEvents(k_cima, k_baixo, k_esquerda, k_direita);
 	}
 	
 	public void update(double deltaTime){
-		bola.posX = bola.posX + bola.velX * deltaTime; // velocidade do objeto (horizontalmente)
-		bola.posY = bola.posY + bola.velY * deltaTime; // velocidade do objeto (verticalmente)
-		// calcular o centro da bola
-		bola.centroX = bola.posX + bola.raio;
-		bola.centroY = bola.posY + bola.raio;
-		
+		jogador.update(deltaTime);
+		inimigo.update(deltaTime);
 		testeColisoes(deltaTime);
 	}
 	
@@ -159,27 +122,19 @@ public class Game extends JPanel{
 	// OUTROS MÉTODOS ------------------
 	
 	public void testeColisoes(double deltaTime) {
-		
-		// Colisão comum --------------
-		if (bola.posX + bola.raio * 2 >= Principal.largura_tela || bola.posX <= 0) {
+		if (jogador.posX + jogador.raio * 2 >= Principal.largura_tela || jogador.posX <= 0) {
 			
-			bola.posX = bola.posX - bola.velX * deltaTime; // desfaz o movimento
-		
+			jogador.desmoverX(deltaTime);
 		}
-		if (bola.posY + bola.raio * 2 >= Principal.altura_tela || bola.posY <= 0) {
+		if (jogador.posY + jogador.raio * 2 >= Principal.altura_tela || jogador.posY <= 0) {
 			
-			bola.posY = bola.posY - bola.velY * deltaTime; // desfaz o movimento
+			jogador.desmoverY(deltaTime);
 		}
 		
-		// Colisão circular ------------
-		double catetoH = bola.centroX - inimigo.centroX;
-		double catetoV = bola.centroY - inimigo.centroY;
-		double hipotenusa = Math.sqrt(Math.pow(catetoH, 2) + Math.pow(catetoV, 2));
+		// COLISÃO DO JOGADOR COM O LIMITE DIREITO DO CAMPO
 		
-		if (hipotenusa <= bola.raio + inimigo.raio) { // Verifica se houve colisão circular
-			
-			bola.posX = bola.posX - bola.velX * deltaTime; // desfaz o movimento
-			bola.posY = bola.posY - bola.velY * deltaTime; // desfaz o movimento
+		if(jogador.posX <= Principal.limite_direito) {
+			jogador.desmoverX(deltaTime);
 		}
 	}
 	
@@ -190,17 +145,17 @@ public class Game extends JPanel{
 		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		super.paintComponent(g2d);
-		AffineTransform af1 = new AffineTransform();
-		AffineTransform af2 = new AffineTransform();
-		af1.translate(bola.posX, bola.posY);
-		af2.translate(inimigo.posX, inimigo.posY);
 		
-		setBackground(Color.LIGHT_GRAY);
-		g2d.setColor(Color.RED);
+		// desenha o chão do cenário
+		g2d.drawImage(bg, 0, 0, Principal.largura_tela, Principal.altura_tela, null);
+		// desenha as marcações de limite de movimentação
+		g2d.setColor(Color.GRAY);
+		g2d.fillRect(Principal.limite_direito, 0, 5, Principal.altura_tela);
+		g2d.fillRect(Principal.limite_esquerdo, 0, 5, Principal.altura_tela);
 		
 		// Posição e dimensão do obj "Bola" com parâmetros relativos ao obj
-		g2d.drawImage(imgAtual, af1, null);
+		g2d.drawImage(jogador.imgAtual, jogador.af, null);
 		// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
-		g2d.drawImage(inimigo.img, af2, null);
+		g2d.drawImage(inimigo.img, inimigo.af, null);
 	}
 }

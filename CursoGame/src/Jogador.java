@@ -28,7 +28,7 @@ public class Jogador {
 		
 		// Carregar a imagem da bola dentro do arquivo imgs/sprite.png
 		try {
-			sprite = ImageIO.read(getClass().getResource("imgs/sprite.png"));
+			sprite = ImageIO.read(getClass().getResource("imgs/sprite_person_bola.png"));
 			
 			cima = Recursos.getInstance().cortarImagem(100, 0, 200, 100, sprite);
 			baixo = Recursos.getInstance().cortarImagem(0, 100, 100, 200, sprite);

@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 public class Game extends JPanel{
 	private Jogador jogador;
 	private Inimigo inimigo;
+	private Bolinha bolinha;
 	private boolean k_cima = false;
 	private boolean k_baixo = false;
 	private boolean k_direita = false;
@@ -55,6 +56,7 @@ public class Game extends JPanel{
 		
 		jogador = new Jogador();
 		inimigo = new Inimigo();
+		bolinha = new Bolinha();
 		
 		try {
 			bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
@@ -112,6 +114,7 @@ public class Game extends JPanel{
 	public void update(double deltaTime){
 		jogador.update(deltaTime);
 		inimigo.update(deltaTime);
+		bolinha.update(deltaTime);
 		testeColisoes(deltaTime);
 	}
 	
@@ -131,10 +134,82 @@ public class Game extends JPanel{
 			jogador.desmoverY(deltaTime);
 		}
 		
+		// COLISÃO DA BOLINHA COM O JOGADOR
+		
+		double ladoHorizontal = jogador.centroX - bolinha.centroX;
+		double ladoVertical = jogador.centroY - bolinha.centroY;
+		double hipotenusa = Math.sqrt(Math.pow(ladoHorizontal, 2) + Math.pow(ladoVertical, 2));
+		
+		if(hipotenusa <= jogador.raio + bolinha.raio) {
+			jogador.desmoverX(deltaTime);
+			jogador.desmoverY(deltaTime);
+			double seno, cosseno;
+			cosseno = ladoHorizontal / hipotenusa;
+			seno = ladoVertical / hipotenusa;
+			bolinha.velX = (- bolinha.velBase) * cosseno;
+			bolinha.velY = (- bolinha.velBase) * seno;
+		}
+		
+		// COLISÃO DA BOLINHA COM O INIMIGO
+		
+		ladoHorizontal = inimigo.centroX - bolinha.centroX;
+		ladoVertical = inimigo.centroY - bolinha.centroY;
+		hipotenusa = Math.sqrt(Math.pow(ladoHorizontal, 2) + Math.pow(ladoVertical, 2));
+		
+		if(hipotenusa <= inimigo.raio + bolinha.raio) {
+			inimigo.desmoverX(deltaTime);
+			inimigo.desmoverY(deltaTime);
+			double seno, cosseno;
+			cosseno = ladoHorizontal / hipotenusa;
+			seno = ladoVertical / hipotenusa;
+			bolinha.velX = (- bolinha.velBase) * cosseno;
+			bolinha.velY = (- bolinha.velBase) * seno;
+		}
 		// COLISÃO DO JOGADOR COM O LIMITE DIREITO DO CAMPO
 		
 		if(jogador.posX <= Principal.limite_direito) {
 			jogador.desmoverX(deltaTime);
+		}
+		
+		// COLISÃO DO INIMIGO COM O LIMITE INFERIOR
+		
+		if(inimigo.posY + (inimigo.raio*2) >= Principal.altura_tela) {
+			inimigo.desmoverY(deltaTime);
+			inimigo.velY = inimigo.velY * -1;
+		}
+		
+		// COLISÃO DO INIMIGO COM O LIMITE SUPERIOR
+		
+		if(inimigo.posY <= 0) {
+			inimigo.desmoverY(deltaTime);
+			inimigo.velY = inimigo.velY * -1;
+		}
+		
+		// COLISÃO DA BOLINHA COM O LADO DIREITO DA TELA
+		
+		if(bolinha.posX + (bolinha.raio * 2) >= Principal.largura_tela) {
+			bolinha.velX = bolinha.velX * -1;
+			bolinha.posX = Principal.largura_tela - (bolinha.raio * 2);
+		}
+		
+		// COLISÃO DA BOLINHA COM O LADO ESQUERDO DA TELA
+		if(bolinha.posX <= 0) {
+			bolinha.velX = bolinha.velX * -1;
+			bolinha.posX = 0;
+		}
+		
+		// COLISÃO DA BOLINHA COM O LADO INFERIOR DA TELA
+		
+		if(bolinha.posY + (bolinha.raio * 2) >= Principal.altura_tela) {
+			bolinha.velY = bolinha.velY * -1;
+			bolinha.posY = Principal.altura_tela - (bolinha.raio * 2);
+		}
+		
+		// COLISÃO DA BOLINHA COM O LADO SUPERIOR DA TELA
+		
+		if(bolinha.posY <= 0) {
+			bolinha.velY = bolinha.velY * -1;
+			bolinha.posY = 0;
 		}
 	}
 	
@@ -153,9 +228,11 @@ public class Game extends JPanel{
 		g2d.fillRect(Principal.limite_direito, 0, 5, Principal.altura_tela);
 		g2d.fillRect(Principal.limite_esquerdo, 0, 5, Principal.altura_tela);
 		
-		// Posição e dimensão do obj "Bola" com parâmetros relativos ao obj
+		// Posição e dimensão do obj "Jogador" com parâmetros relativos ao obj
 		g2d.drawImage(jogador.imgAtual, jogador.af, null);
 		// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
 		g2d.drawImage(inimigo.img, inimigo.af, null);
+		// Posição e dimensão do obj "Bolinha" com parâmetros relativos ao obj
+		g2d.drawImage(bolinha.img, bolinha.af, null);
 	}
 }

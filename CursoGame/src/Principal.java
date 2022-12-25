@@ -10,7 +10,7 @@ public class Principal {
 	
 	// Janela principal da aplicação
 	public Principal() {
-		JFrame janela = new JFrame("Jogo2D");
+		JFrame janela = new JFrame("Air Hockey 2D");
 		
 		Game game = new Game();
 		

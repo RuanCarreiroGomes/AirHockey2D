@@ -2,7 +2,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
-public class Inimigo {
+public class Bolinha {
 	public BufferedImage sprite;
 	public BufferedImage img;
 	public AffineTransform af;
@@ -15,25 +15,25 @@ public class Inimigo {
 	public double centroX;
 	public double centroY;
 	
-	public Inimigo() {
-		try{
-			sprite = ImageIO.read(getClass().getResource("imgs/sprite_inimigo.png"));
-			img = Recursos.getInstance().cortarImagem(300, 100, 400, 200, sprite);
-		}catch (Exception e) {
-			e.printStackTrace();
+	public Bolinha() {
+		try {
+			sprite = ImageIO.read(getClass().getResource("imgs/sprite_person_bola.png"));
+			img = Recursos.getInstance().cortarImagem(400, 100, 430, 130, sprite);
+		} catch(Exception e) {
+			System.out.println("Erro ao carregar imagem!");
 		}
 		
 		af = new AffineTransform();
-		// Posição do inimigo centralizado na tela
-		raio = 50;
-		posX = (Principal.largura_tela * (1.0 / 8.0) - raio);
+		raio = 15;
+		posX = (Principal.largura_tela / 2 - raio);
 		posY = (Principal.altura_tela / 2) - raio;
-		velBase = 3;
-		velX = 0;
-		velY = velBase;
+		velBase = 5;
+		velX = velBase / 2;
+		velY = velBase / 2;
 		centroX = posX + raio;
 		centroY = posY + raio;
 	}
+	
 	public void update(double deltaTime) {
 		mover(deltaTime);
 		centroX = posX + raio;

@@ -23,6 +23,7 @@ public class Game extends JPanel{
 	private long tempoAnterior;
 	private double deltaTime;
 	private double FPS_limit = 60;
+	private char estado;
 	
 	
 	public Game() {
@@ -36,27 +37,37 @@ public class Game extends JPanel{
 			}
 			@Override
 			public void keyReleased(KeyEvent e) {
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_UP: k_cima = false; break;
-				case KeyEvent.VK_DOWN: k_baixo = false; break;
-				case KeyEvent.VK_LEFT: k_esquerda = false; break;
-				case KeyEvent.VK_RIGHT: k_direita = false; break;
+				if(estado == 'E') {
+					switch (e.getKeyCode()) {
+					case KeyEvent.VK_UP: k_cima = false; break;
+					case KeyEvent.VK_DOWN: k_baixo = false; break;
+					case KeyEvent.VK_LEFT: k_esquerda = false; break;
+					case KeyEvent.VK_RIGHT: k_direita = false; break;
+					}
 				}
 			}
 			@Override
 			public void keyPressed(KeyEvent e) {
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_UP: k_cima = true; break;
-				case KeyEvent.VK_DOWN: k_baixo = true; break;
-				case KeyEvent.VK_LEFT: k_esquerda = true; break;
-				case KeyEvent.VK_RIGHT: k_direita = true; break;
+				
+				if(estado == 'E') {
+					switch (e.getKeyCode()) {
+					case KeyEvent.VK_UP: k_cima = true; break;
+					case KeyEvent.VK_DOWN: k_baixo = true; break;
+					case KeyEvent.VK_LEFT: k_esquerda = true; break;
+					case KeyEvent.VK_RIGHT: k_direita = true; break;
+					}
+				} else if(estado == 'P') {
+					
 				}
+				
 			}
 		});
 		
 		jogador = new Jogador();
 		inimigo = new Inimigo();
 		bolinha = new Bolinha();
+		estado = 'S';
+		agendarTransicao(3000, 'E');
 		
 		try {
 			bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
@@ -108,14 +119,20 @@ public class Game extends JPanel{
 	
 	// Movimentação da bola:
 	public void handlerEvents(){
-		jogador.handlerEvents(k_cima, k_baixo, k_esquerda, k_direita);
+		if(estado == 'E') {
+			jogador.handlerEvents(k_cima, k_baixo, k_esquerda, k_direita);
+		}
 	}
 	
 	public void update(double deltaTime){
-		jogador.update(deltaTime);
-		inimigo.update(deltaTime);
-		bolinha.update(deltaTime);
-		testeColisoes(deltaTime);
+		if(estado == 'E') {
+			jogador.update(deltaTime);
+			inimigo.update(deltaTime);
+			bolinha.update(deltaTime);
+			testeColisoes(deltaTime);
+		}else if(estado == 'G') {
+			estado = 'R';
+		}
 	}
 	
 	public void render(){
@@ -213,6 +230,23 @@ public class Game extends JPanel{
 		}
 	}
 	
+	
+	public void agendarTransicao(int tempo, char novoEstado) {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(tempo);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+				estado = novoEstado;
+			}
+		});
+		thread.start();
+	}
+	
+	
 	// MÉTODO SOBESCRITO ---------------
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -221,18 +255,35 @@ public class Game extends JPanel{
 				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		super.paintComponent(g2d);
 		
-		// desenha o chão do cenário
-		g2d.drawImage(bg, 0, 0, Principal.largura_tela, Principal.altura_tela, null);
-		// desenha as marcações de limite de movimentação
-		g2d.setColor(Color.GRAY);
-		g2d.fillRect(Principal.limite_direito, 0, 5, Principal.altura_tela);
-		g2d.fillRect(Principal.limite_esquerdo, 0, 5, Principal.altura_tela);
 		
-		// Posição e dimensão do obj "Jogador" com parâmetros relativos ao obj
-		g2d.drawImage(jogador.imgAtual, jogador.af, null);
-		// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
-		g2d.drawImage(inimigo.img, inimigo.af, null);
-		// Posição e dimensão do obj "Bolinha" com parâmetros relativos ao obj
-		g2d.drawImage(bolinha.img, bolinha.af, null);
+		if(estado == 'S') {
+			g2d.setColor(Color.WHITE);
+			g2d.fillRect(0, 0, Principal.largura_tela, Principal.altura_tela);
+		} else if(estado == 'R') {
+			g2d.setColor(Color.BLACK);
+			g2d.fillRect(0, 0, Principal.largura_tela, Principal.altura_tela);
+		} else { // Se estiver n estado EXECUTANDO ou PAUSADO
+			
+			// desenha o chão do cenário
+			g2d.drawImage(bg, 0, 0, Principal.largura_tela, Principal.altura_tela, null);
+			// desenha as marcações de limite de movimentação
+			g2d.setColor(Color.GRAY);
+			g2d.fillRect(Principal.limite_direito, 0, 5, Principal.altura_tela);
+			g2d.fillRect(Principal.limite_esquerdo, 0, 5, Principal.altura_tela);
+			
+			// Posição e dimensão do obj "Jogador" com parâmetros relativos ao obj
+			g2d.drawImage(jogador.imgAtual, jogador.af, null);
+			// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
+			g2d.drawImage(inimigo.img, inimigo.af, null);
+			// Posição e dimensão do obj "Bolinha" com parâmetros relativos ao obj
+			g2d.drawImage(bolinha.img, bolinha.af, null);
+			
+			if(estado == 'E') { // Executando
+				
+			} else { // Pausado
+				g2d.setColor(new Color(0,0,0,128));
+				g2d.fillRect(0, 0, Principal.largura_tela, Principal.altura_tela);
+			}
+		}
 	}
 }

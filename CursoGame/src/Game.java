@@ -24,6 +24,7 @@ public class Game extends JPanel{
 	private double deltaTime;
 	private double FPS_limit = 60;
 	private char estado;
+	private BufferedImage splashLogo;
 	
 	
 	public Game() {
@@ -55,9 +56,47 @@ public class Game extends JPanel{
 					case KeyEvent.VK_DOWN: k_baixo = true; break;
 					case KeyEvent.VK_LEFT: k_esquerda = true; break;
 					case KeyEvent.VK_RIGHT: k_direita = true; break;
+					case KeyEvent.VK_ESCAPE: 
+						estado = 'P'; 
+						Recursos.getInstance().tocarSomMenu();
+						break;
 					}
 				} else if(estado == 'P') {
-					
+					switch (e.getKeyCode()) {
+					case KeyEvent.VK_UP:
+						Recursos.getInstance().tocarSomMenu();
+						
+						Recursos.getInstance().pauseOpt = 0;
+						break;
+					case KeyEvent.VK_DOWN:
+						Recursos.getInstance().tocarSomMenu();
+						
+						Recursos.getInstance().pauseOpt = 1;
+						break;
+					case KeyEvent.VK_ENTER:
+						Recursos.getInstance().tocarSomMenu();
+						
+						if(Recursos.getInstance().pauseOpt == 0) {
+							estado = 'E';
+							k_cima = false;
+							k_baixo = false;
+							k_esquerda = false;
+							k_direita = false;
+						} else {
+							System.exit(0);
+						}
+						
+						break;
+					case KeyEvent.VK_ESCAPE:
+						Recursos.getInstance().tocarSomMenu();
+						
+						estado = 'E';
+						k_cima = false;
+						k_baixo = false;
+						k_esquerda = false;
+						k_direita = false;
+						break;
+					}
 				}
 				
 			}
@@ -69,8 +108,10 @@ public class Game extends JPanel{
 		estado = 'S';
 		agendarTransicao(3000, 'E');
 		
+		
 		try {
 			bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
+			splashLogo = ImageIO.read(getClass().getResource("imgs/logo.png"));
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -130,8 +171,11 @@ public class Game extends JPanel{
 			inimigo.update(deltaTime);
 			bolinha.update(deltaTime);
 			testeColisoes(deltaTime);
+			testeFimJogo();
 		}else if(estado == 'G') {
 			estado = 'R';
+			reiniciar();
+			agendarTransicao(2000, 'E');
 		}
 	}
 	
@@ -165,6 +209,8 @@ public class Game extends JPanel{
 			seno = ladoVertical / hipotenusa;
 			bolinha.velX = (- bolinha.velBase) * cosseno;
 			bolinha.velY = (- bolinha.velBase) * seno;
+			
+			Recursos.getInstance().tocarSomBolinha();
 		}
 		
 		// COLISÃO DA BOLINHA COM O INIMIGO
@@ -181,6 +227,8 @@ public class Game extends JPanel{
 			seno = ladoVertical / hipotenusa;
 			bolinha.velX = (- bolinha.velBase) * cosseno;
 			bolinha.velY = (- bolinha.velBase) * seno;
+			
+			Recursos.getInstance().tocarSomBolinha();
 		}
 		// COLISÃO DO JOGADOR COM O LIMITE DIREITO DO CAMPO
 		
@@ -206,13 +254,19 @@ public class Game extends JPanel{
 		
 		if(bolinha.posX + (bolinha.raio * 2) >= Principal.largura_tela) {
 			bolinha.velX = bolinha.velX * -1;
-			bolinha.posX = Principal.largura_tela - (bolinha.raio * 2);
+			bolinha.posX = Principal.largura_tela / 2 - (bolinha.raio) + 90;
+			Recursos.getInstance().pontosInimigo++;
+			
+			Recursos.getInstance().tocarSomBolinha();
 		}
 		
 		// COLISÃO DA BOLINHA COM O LADO ESQUERDO DA TELA
 		if(bolinha.posX <= 0) {
 			bolinha.velX = bolinha.velX * -1;
-			bolinha.posX = 0;
+			bolinha.posX = Principal.largura_tela / 2 - (bolinha.raio) - 90;
+			Recursos.getInstance().pontosJogador++;
+			
+			Recursos.getInstance().tocarSomBolinha();
 		}
 		
 		// COLISÃO DA BOLINHA COM O LADO INFERIOR DA TELA
@@ -220,6 +274,8 @@ public class Game extends JPanel{
 		if(bolinha.posY + (bolinha.raio * 2) >= Principal.altura_tela) {
 			bolinha.velY = bolinha.velY * -1;
 			bolinha.posY = Principal.altura_tela - (bolinha.raio * 2);
+			
+			Recursos.getInstance().tocarSomBolinha();
 		}
 		
 		// COLISÃO DA BOLINHA COM O LADO SUPERIOR DA TELA
@@ -227,6 +283,8 @@ public class Game extends JPanel{
 		if(bolinha.posY <= 0) {
 			bolinha.velY = bolinha.velY * -1;
 			bolinha.posY = 0;
+			
+			Recursos.getInstance().tocarSomBolinha();
 		}
 	}
 	
@@ -246,6 +304,40 @@ public class Game extends JPanel{
 		thread.start();
 	}
 	
+	public void testeFimJogo() {
+		if(Recursos.getInstance().pontosJogador == Recursos.getInstance().maxPontos) {
+			Recursos.getInstance().msgFim = "VOCÊ VENCEU!";
+			estado = 'G';
+		} else if(Recursos.getInstance().pontosInimigo == Recursos.getInstance().maxPontos) {
+			Recursos.getInstance().msgFim = "VOCÊ PERDEU!";
+			estado = 'G';
+		}
+	}
+	
+	public void reiniciar() {
+		// reiniciar os atributos do inimigo
+		inimigo.posX = (Principal.largura_tela * (1.0/8.0) - inimigo.raio);
+		inimigo.posY = (Principal.altura_tela / 2) - inimigo.raio;
+		inimigo.velY = inimigo.velBase;
+		Recursos.getInstance().pontosInimigo = 0;
+		
+		// reiniciar os atributos do jogador
+		jogador.posX = (Principal.largura_tela * (7.0/8.0) - jogador.raio);
+		jogador.posY = (Principal.altura_tela / 2) - jogador.raio;
+		Recursos.getInstance().pontosJogador = 0;
+		
+		// reiniciar os atributos da bolinha
+		bolinha.velX = bolinha.velBase / 2;
+		bolinha.velY = bolinha.velBase / 2;
+		bolinha.posX = (Principal.largura_tela / 2) - bolinha.raio;
+		bolinha.posY = (Principal.altura_tela / 2) - bolinha.raio;
+		
+		// reiniciar as variáveis das teclas direcionais
+		k_cima = false;
+		k_baixo = false;
+		k_esquerda = false;
+		k_direita = false;
+	}
 	
 	// MÉTODO SOBESCRITO ---------------
 	@Override
@@ -257,11 +349,13 @@ public class Game extends JPanel{
 		
 		
 		if(estado == 'S') {
-			g2d.setColor(Color.WHITE);
-			g2d.fillRect(0, 0, Principal.largura_tela, Principal.altura_tela);
+			g2d.drawImage(splashLogo, 0, 0, null);
 		} else if(estado == 'R') {
 			g2d.setColor(Color.BLACK);
 			g2d.fillRect(0, 0, Principal.largura_tela, Principal.altura_tela);
+			g2d.setFont(Recursos.getInstance().fontMenu);
+			g2d.setColor(Color.WHITE);
+			g2d.drawString(Recursos.getInstance().msgFim, 150, 200);
 		} else { // Se estiver n estado EXECUTANDO ou PAUSADO
 			
 			// desenha o chão do cenário
@@ -280,9 +374,29 @@ public class Game extends JPanel{
 			
 			if(estado == 'E') { // Executando
 				
+				// desenha a pontuação na tela
+				g2d.setFont(Recursos.getInstance().fontPontuacao);
+				g2d.setColor(Color.WHITE);
+				g2d.drawString(Recursos.getInstance().pontosInimigo + "pts", 140, 40);
+				g2d.drawString(Recursos.getInstance().pontosJogador + "pts", 440, 40);
+			
 			} else { // Pausado
 				g2d.setColor(new Color(0,0,0,128));
 				g2d.fillRect(0, 0, Principal.largura_tela, Principal.altura_tela);
+				
+				// desenha os elementos do menu pause
+				g2d.setFont(Recursos.getInstance().fontMenu);
+				g2d.setColor(Color.WHITE);
+				g2d.drawString("JOGO PAUSADO", 150, 80);
+				g2d.drawString("Continuar", 220, 200);
+				g2d.drawString("Sair", 220, 270);
+				
+				// desenha o seletor de opções
+				if(Recursos.getInstance().pauseOpt == 0) {
+					g2d.fillRect(180, 170, 30, 30);
+				} else {
+					g2d.fillRect(180, 240, 30, 30);
+				}
 			}
 		}
 	}

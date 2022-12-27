@@ -105,9 +105,9 @@ public class Game extends JPanel{
 		jogador = new Jogador();
 		inimigo = new Inimigo();
 		bolinha = new Bolinha();
+		
 		estado = 'S';
 		agendarTransicao(3000, 'E');
-		
 		
 		try {
 			bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
@@ -162,6 +162,7 @@ public class Game extends JPanel{
 	public void handlerEvents(){
 		if(estado == 'E') {
 			jogador.handlerEvents(k_cima, k_baixo, k_esquerda, k_direita);
+			inimigo.handlerEvents(bolinha);
 		}
 	}
 	
@@ -238,17 +239,11 @@ public class Game extends JPanel{
 		
 		// COLISÃO DO INIMIGO COM O LIMITE INFERIOR
 		
-		if(inimigo.posY + (inimigo.raio*2) >= Principal.altura_tela) {
-			inimigo.desmoverY(deltaTime);
-			inimigo.velY = inimigo.velY * -1;
-		}
+		
 		
 		// COLISÃO DO INIMIGO COM O LIMITE SUPERIOR
 		
-		if(inimigo.posY <= 0) {
-			inimigo.desmoverY(deltaTime);
-			inimigo.velY = inimigo.velY * -1;
-		}
+		
 		
 		// COLISÃO DA BOLINHA COM O LADO DIREITO DA TELA
 		
@@ -368,7 +363,7 @@ public class Game extends JPanel{
 			// Posição e dimensão do obj "Jogador" com parâmetros relativos ao obj
 			g2d.drawImage(jogador.imgAtual, jogador.af, null);
 			// Posição e dimensão do obj "Inimigo" com parâmetros relativos ao obj
-			g2d.drawImage(inimigo.img, inimigo.af, null);
+			g2d.drawImage(inimigo.imgAtual, inimigo.af, null);
 			// Posição e dimensão do obj "Bolinha" com parâmetros relativos ao obj
 			g2d.drawImage(bolinha.img, bolinha.af, null);
 			

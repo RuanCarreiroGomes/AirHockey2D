@@ -6,6 +6,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
+import java.util.Random;
 
 public class Recursos {
 	private static Recursos singleton = null;
@@ -22,6 +23,7 @@ public class Recursos {
 	public Clip clipMenu;
 	public Clip clipSilence;
 	public Clip clipSet;
+	private Random random;
 	
 	// Construtor privado! só pode ser invocado nessa classe.
 	private Recursos() {
@@ -33,6 +35,7 @@ public class Recursos {
 		msgFim = "";
 		pauseOpt = 0;
 		carregarSons();
+		random = new Random(System.currentTimeMillis());
 	}
 	
 	// Instanciando objeto único dentro da própria classe.
@@ -85,5 +88,9 @@ public class Recursos {
 	public void tocarSomMenu() {
 		clipMenu.setFramePosition(0);
 		clipMenu.start();
+	}
+	
+	public int gerarAleatorio(int min, int max) {
+		return random.nextInt((max + 1) - min) + min;
 	}
 }

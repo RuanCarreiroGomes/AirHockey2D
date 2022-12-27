@@ -4,11 +4,13 @@ import java.awt.Dimension;
 public class Principal {
 	public static final int largura_tela = 640;
 	public static final int altura_tela = 480;
+	public static final int limite_direito = 420;
+	public static final int limite_esquerdo = 215;
 	
 	
 	// Janela principal da aplicação
 	public Principal() {
-		JFrame janela = new JFrame("Jogo2D");
+		JFrame janela = new JFrame("Air Hockey 2D");
 		
 		Game game = new Game();
 		
